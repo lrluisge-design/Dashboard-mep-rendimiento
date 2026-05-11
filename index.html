@@ -960,7 +960,7 @@
             
             const totalEntregas = datos.length;
             const totalEst = datos.reduce((sum, d) => sum + d.totalEstudiantes, 0);
-            const totalAprob = datos.reduce((sum, d) => sum + d.notasAprobados, 0);
+            const totalAprob = datos.reduce((sum, d) => sum + d.notasAprobadas, 0);
             const promedio = ((totalAprob / totalEst) * 100).toFixed(1);
             
             document.getElementById('statsGeneral').innerHTML = `
@@ -987,7 +987,7 @@
             datos.forEach(d => {
                 if (!porNivel[d.nivel]) porNivel[d.nivel] = { total: 0, aprobados: 0 };
                 porNivel[d.nivel].total += d.totalEstudiantes;
-                porNivel[d.nivel].aprobados += d.notasAprobados;
+                porNivel[d.nivel].aprobados += d.notasAprobadas;
             });
             
             const niveles = Object.keys(porNivel).sort();
@@ -1020,7 +1020,7 @@
             datos.forEach(d => {
                 if (!porMateria[d.materia]) porMateria[d.materia] = { total: 0, aprobados: 0 };
                 porMateria[d.materia].total += d.totalEstudiantes;
-                porMateria[d.materia].aprobados += d.notasAprobados;
+                porMateria[d.materia].aprobados += d.notasAprobadas;
             });
             
             const materias = Object.keys(porMateria);
@@ -1071,7 +1071,7 @@
                     <td>${d.seccion}</td>
                     <td>${d.materia}</td>
                     <td>${d.totalEstudiantes}</td>
-                    <td>${d.notasAprobados}</td>
+                    <td>${d.notasAprobadas}</td>
                     <td><strong>${d.porcentaje}%</strong></td>
                 </tr>`;
             });
@@ -1102,7 +1102,7 @@
                 }
                 porSeccion[key].entregas++;
                 porSeccion[key].total += d.totalEstudiantes;
-                porSeccion[key].aprobados += d.notasAprobados;
+                porSeccion[key].aprobados += d.notasAprobadas;
             });
             
             let html = '<div style="overflow-x: auto;"><table><thead><tr>';
@@ -1144,7 +1144,7 @@
                 }
                 porProfesor[d.profesor].entregas++;
                 porProfesor[d.profesor].total += d.totalEstudiantes;
-                porProfesor[d.profesor].aprobados += d.notasAprobados;
+                porProfesor[d.profesor].aprobados += d.notasAprobadas;
             });
             
             let html = '<div style="overflow-x: auto;"><table><thead><tr>';
@@ -1179,7 +1179,7 @@
                     porPeriodo[d.periodo][d.nivel] = { total: 0, aprobados: 0 };
                 }
                 porPeriodo[d.periodo][d.nivel].total += d.totalEstudiantes;
-                porPeriodo[d.periodo][d.nivel].aprobados += d.notasAprobados;
+                porPeriodo[d.periodo][d.nivel].aprobados += d.notasAprobadas;
             });
             
             const niveles = [...new Set(datos.map(d => d.nivel))].sort();
@@ -1271,7 +1271,7 @@
                     <td>${d.nivel}°</td>
                     <td>${d.profesor}</td>
                     <td>${d.totalEstudiantes}</td>
-                    <td>${d.notasAprobados}</td>
+                    <td>${d.notasAprobadas}</td>
                     <td><strong>${d.porcentaje}%</strong></td>
                 </tr>`;
             });
@@ -1360,7 +1360,7 @@
                     especialidad,
                     materia,
                     totalEstudiantes: totalNum,
-                    notasAprobados: aprobadosNum,
+                    notasAprobadas: aprobadosNum,
                     porcentaje: parseFloat(porcentaje),
                     fecha: new Date().toLocaleString('es-CR'),
                     timestamp: Date.now() + i
@@ -1465,10 +1465,10 @@
             if (!confirm('¿Cargar datos de ejemplo en Firebase?')) return;
             
             const ejemplos = [
-                { profesor: 'Juan Pérez', periodo: 1, nivel: 7, seccion: '7-1', especialidad: '', materia: 'Matemáticas', totalEstudiantes: 30, notasAprobados: 22, porcentaje: 73.3, fecha: new Date().toLocaleString('es-CR'), timestamp: Date.now() },
-                { profesor: 'María López', periodo: 1, nivel: 8, seccion: '8-1', especialidad: '', materia: 'Español', totalEstudiantes: 28, notasAprobados: 24, porcentaje: 85.7, fecha: new Date().toLocaleString('es-CR'), timestamp: Date.now() + 1 },
-                { profesor: 'Carlos Ramírez', periodo: 1, nivel: 10, seccion: '10-1', especialidad: 'Informática', materia: 'Física', totalEstudiantes: 25, notasAprobados: 18, porcentaje: 72.0, fecha: new Date().toLocaleString('es-CR'), timestamp: Date.now() + 2 },
-                { profesor: 'Ana Gutiérrez', periodo: 2, nivel: 9, seccion: '9-1', especialidad: '', materia: 'Ciencias', totalEstudiantes: 27, notasAprobados: 21, porcentaje: 77.8, fecha: new Date().toLocaleString('es-CR'), timestamp: Date.now() + 3 }
+                { profesor: 'Juan Pérez', periodo: 1, nivel: 7, seccion: '7-1', especialidad: '', materia: 'Matemáticas', totalEstudiantes: 30, notasAprobadas: 22, porcentaje: 73.3, fecha: new Date().toLocaleString('es-CR'), timestamp: Date.now() },
+                { profesor: 'María López', periodo: 1, nivel: 8, seccion: '8-1', especialidad: '', materia: 'Español', totalEstudiantes: 28, notasAprobadas: 24, porcentaje: 85.7, fecha: new Date().toLocaleString('es-CR'), timestamp: Date.now() + 1 },
+                { profesor: 'Carlos Ramírez', periodo: 1, nivel: 10, seccion: '10-1', especialidad: 'Informática', materia: 'Física', totalEstudiantes: 25, notasAprobadas: 18, porcentaje: 72.0, fecha: new Date().toLocaleString('es-CR'), timestamp: Date.now() + 2 },
+                { profesor: 'Ana Gutiérrez', periodo: 2, nivel: 9, seccion: '9-1', especialidad: '', materia: 'Ciencias', totalEstudiantes: 27, notasAprobadas: 21, porcentaje: 77.8, fecha: new Date().toLocaleString('es-CR'), timestamp: Date.now() + 3 }
             ];
             
             try {
