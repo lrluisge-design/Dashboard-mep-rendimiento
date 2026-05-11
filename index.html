@@ -1053,10 +1053,15 @@
             const filtro = document.getElementById('filtroNivel').value;
             const container = document.getElementById('contenidoNivel');
             
+            console.log('actualizarVistaNivel - Total datos:', datos.length);
+            console.log('actualizarVistaNivel - Filtro:', filtro);
+            
             let datosFiltrados = filtro === 'todos' ? datos : datos.filter(d => d.nivel == filtro);
             
+            console.log('actualizarVistaNivel - Datos filtrados:', datosFiltrados.length);
+            
             if (datosFiltrados.length === 0) {
-                container.innerHTML = '<p style="text-align: center; padding: 2rem;">No hay datos para este nivel</p>';
+                container.innerHTML = '<p style="text-align: center; padding: 2rem; color: #999;">No hay datos para este nivel</p>';
                 return;
             }
             
@@ -1083,8 +1088,10 @@
         function actualizarSeccion() {
             const container = document.getElementById('contenidoSeccion');
             
+            console.log('actualizarSeccion - Total datos:', datos.length);
+            
             if (datos.length === 0) {
-                container.innerHTML = '<p style="text-align: center; padding: 2rem;">No hay datos</p>';
+                container.innerHTML = '<p style="text-align: center; padding: 2rem; color: #999;">No hay datos disponibles</p>';
                 return;
             }
             
@@ -1242,9 +1249,13 @@
         }
 
         function actualizarVistaMateria() {
+            console.log('actualizarVistaMateria - Total datos:', datos.length);
+            
             // Actualizar filtro de materias
             const filtroMateria = document.getElementById('filtroMateria');
             const materiasUnicas = [...new Set(datos.map(d => d.materia))].sort();
+            
+            console.log('actualizarVistaMateria - Materias únicas:', materiasUnicas.length);
             
             filtroMateria.innerHTML = '<option value="todas">Todas las Materias</option>';
             materiasUnicas.forEach(m => {
@@ -1256,8 +1267,10 @@
             
             let datosFiltrados = filtro === 'todas' ? datos : datos.filter(d => d.materia === filtro);
             
+            console.log('actualizarVistaMateria - Datos filtrados:', datosFiltrados.length);
+            
             if (datosFiltrados.length === 0) {
-                container.innerHTML = '<p style="text-align: center; padding: 2rem;">No hay datos</p>';
+                container.innerHTML = '<p style="text-align: center; padding: 2rem; color: #999;">No hay datos disponibles</p>';
                 return;
             }
             
@@ -1486,6 +1499,19 @@
 
         async function inicializarListener() {
             try {
+                // Esperar a que window.firestoreModules esté disponible
+                let intentos = 0;
+                while (!window.firestoreModules && intentos < 50) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    intentos++;
+                }
+                
+                if (!window.firestoreModules) {
+                    console.error('❌ Firebase no se cargó correctamente');
+                    alert('Error: No se pudo conectar con Firebase. Recarga la página.');
+                    return;
+                }
+                
                 const { collection, onSnapshot, query, orderBy } = window.firestoreModules;
                 const q = query(collection(window.db, 'datos'), orderBy('timestamp', 'desc'));
                 
@@ -1513,7 +1539,8 @@
                 
                 console.log('✅ Listener de Firebase activo');
             } catch (error) {
-                console.error('Error en listener:', error);
+                console.error('❌ Error en listener:', error);
+                alert('Error al inicializar Firebase: ' + error.message);
             }
         }
 
@@ -1527,7 +1554,7 @@
             
             cargarMateriasPersonalizadas();
             updateMateriaOptions();
-            setTimeout(inicializarListener, 1000);
+            inicializarListener(); // Llamar directamente, la función ahora espera internamente
             
             console.log('✅ Dashboard inicializado');
             console.log('📅 Válido hasta: 31 de diciembre de 2026');
