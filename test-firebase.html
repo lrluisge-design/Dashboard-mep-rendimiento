@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Conexión Firebase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+        
+        .status {
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .status.loading {
+            background: #FFF3CD;
+            border-left: 4px solid #FFC107;
+            color: #856404;
+        }
+        
+        .status.success {
+            background: #D4EDDA;
+            border-left: 4px solid #28A745;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #F8D7DA;
+            border-left: 4px solid #DC3545;
+            color: #721C24;
+        }
+        
+        .info {
+            background: #E7F3FF;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            border-left: 4px solid #0066CC;
+        }
+        
+        .code {
+            background: #F5F5F5;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🔥</div>
+        <h1>Verificar Conexión Firebase</h1>
+        <p>Esta página verifica que tu configuración de Firebase sea correcta.</p>
+        
+        <div id="status" class="status loading">
+            ⏳ Conectando a Firebase...
+        </div>
+        
+        <div id="info" class="info" style="display: none;">
+            <strong>📊 Información de Conexión:</strong>
+            <div id="details"></div>
+        </div>
+        
+        <button onclick="testWrite()" id="testBtn" style="display: none;">
+            🧪 Probar Escritura
+        </button>
+        
+        <div id="instructions" style="display: none; margin-top: 2rem;">
+            <h3 style="color: #333; margin-bottom: 1rem;">📋 Siguientes Pasos:</h3>
+            <ol style="line-height: 2; color: #666;">
+                <li>Tu conexión a Firebase está funcionando ✅</li>
+                <li>Cierra esta página</li>
+                <li>Abre <strong>index.html</strong> (el dashboard completo)</li>
+                <li>¡Comienza a ingresar datos!</li>
+            </ol>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // 🔥 CONFIGURACIÓN DE FIREBASE
+        // ✅ Credenciales configuradas para: Dashboard MEP Rendimiento
+        const firebaseConfig = {
+            apiKey: "AIzaSyAy-V4T0leg8i7Up0tZ09QjSxD5n-Z05xU",
+            authDomain: "dashboard-mep-rendimiento.firebaseapp.com",
+            projectId: "dashboard-mep-rendimiento",
+            storageBucket: "dashboard-mep-rendimiento.firebasestorage.app",
+            messagingSenderId: "206298323527",
+            appId: "1:206298323527:web:a6b07b3ab76eb425edef62"
+        };
+        
+        const statusDiv = document.getElementById('status');
+        const infoDiv = document.getElementById('info');
+        const detailsDiv = document.getElementById('details');
+        const testBtn = document.getElementById('testBtn');
+        const instructionsDiv = document.getElementById('instructions');
+        
+        try {
+            // Verificar que la configuración no esté vacía
+            if (firebaseConfig.apiKey === "TU_API_KEY_AQUI") {
+                throw new Error('⚠️ NO has configurado tus credenciales de Firebase.\n\nPor favor, abre este archivo con un editor de texto y reemplaza los valores de firebaseConfig con tus credenciales reales de Firebase.');
+            }
+            
+            // Inicializar Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            
+            // Intentar leer la colección
+            const querySnapshot = await getDocs(collection(db, 'datos'));
+            
+            // Éxito!
+            statusDiv.className = 'status success';
+            statusDiv.innerHTML = `
+                ✅ <strong>¡Conexión Exitosa!</strong><br>
+                Firebase está correctamente configurado.
+            `;
+            
+            infoDiv.style.display = 'block';
+            detailsDiv.innerHTML = `
+                <div class="code">
+                    <strong>Proyecto:</strong> ${firebaseConfig.projectId}<br>
+                    <strong>Documentos en la base:</strong> ${querySnapshot.size}<br>
+                    <strong>Estado:</strong> Conectado y operativo
+                </div>
+            `;
+            
+            testBtn.style.display = 'inline-block';
+            instructionsDiv.style.display = 'block';
+            
+            // Guardar db globalmente para el test
+            window.testDb = db;
+            
+        } catch (error) {
+            statusDiv.className = 'status error';
+            statusDiv.innerHTML = `
+                ❌ <strong>Error de Conexión</strong><br>
+                ${error.message}
+            `;
+            
+            infoDiv.style.display = 'block';
+            detailsDiv.innerHTML = `
+                <strong>🔍 Posibles Causas:</strong><br><br>
+                
+                <strong>1. No configuraste tus credenciales:</strong><br>
+                - Abre este archivo con un editor de texto<br>
+                - Busca "TU_API_KEY_AQUI"<br>
+                - Reemplaza TODOS los valores con tus credenciales reales de Firebase<br><br>
+                
+                <strong>2. Reglas de Firestore muy restrictivas:</strong><br>
+                - Ve a Firebase Console → Firestore → Reglas<br>
+                - Asegúrate de que las reglas permitan lectura/escritura<br>
+                - Para pruebas, usa: <code>allow read, write: if true;</code><br><br>
+                
+                <strong>3. No creaste la base de datos Firestore:</strong><br>
+                - Ve a Firebase Console → Firestore Database<br>
+                - Haz clic en "Crear base de datos"<br>
+                - Selecciona "Modo de prueba"<br><br>
+                
+                <strong>4. Credenciales incorrectas:</strong><br>
+                - Verifica que copiaste correctamente TODOS los valores<br>
+                - No debe haber espacios extras ni comillas faltantes<br><br>
+                
+                <div class="code" style="color: red; margin-top: 1rem;">
+                    <strong>Error Técnico:</strong><br>
+                    ${error.code || 'No disponible'}<br>
+                    ${error.message}
+                </div>
+                
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #FFF3CD; border-radius: 4px;">
+                    <strong>📚 Consulta la guía completa:</strong><br>
+                    Abre el archivo <strong>CONFIGURAR_FIREBASE.md</strong> para instrucciones paso a paso.
+                </div>
+            `;
+        }
+        
+        // Función para probar escritura
+        window.testWrite = async function() {
+            testBtn.disabled = true;
+            testBtn.textContent = '⏳ Probando...';
+            
+            try {
+                const testData = {
+                    tipo: 'prueba',
+                    mensaje: 'Test de conexión',
+                    fecha: new Date().toISOString(),
+                    timestamp: Date.now()
+                };
+                
+                await addDoc(collection(window.testDb, 'test_conexion'), testData);
+                
+                alert('✅ ¡Prueba de escritura exitosa!\n\nFirebase está 100% funcional.\nYa puedes usar el dashboard completo.');
+                testBtn.textContent = '✅ Prueba Exitosa';
+                testBtn.style.background = '#28A745';
+                
+            } catch (error) {
+                alert('❌ Error al escribir:\n\n' + error.message + '\n\nVerifica las reglas de Firestore.');
+                testBtn.disabled = false;
+                testBtn.textContent = '🧪 Reintentar';
+            }
+        };
+    </script>
+</body>
+</html>

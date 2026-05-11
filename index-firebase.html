@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Rendimiento Académico - Sistema Colaborativo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Petrona:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f4c75;
+            --secondary: #1b6ca8;
+            --accent: #f39c12;
+            --success: #27ae60;
+            --warning: #e67e22;
+            --danger: #e74c3c;
+            --bg-light: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border: #dfe6e9;
+            --shadow: rgba(15, 76, 117, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 2.5rem 2rem;
+            margin: -2rem -2rem 2rem -2rem;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 10px 40px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        h1 {
+            font-family: 'Petrona', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+            overflow-x: auto;
+            padding-bottom: 0;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+            background: rgba(15, 76, 117, 0.05);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--accent);
+            background: rgba(15, 76, 117, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 16px var(--shadow);
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .card-title {
+            font-family: 'Petrona', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        label .required {
+            color: var(--danger);
+            margin-left: 0.25rem;
+        }
+
+        select, input[type="number"], input[type="text"] {
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            background: white;
+        }
+
+        select:focus, input[type="number"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.1);
+        }
+
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, #e67e22 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            border-color: var(--accent);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, #f8f9fa 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-family: 'Petrona', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        th:first-child {
+            border-radius: 8px 0 0 0;
+        }
+
+        th:last-child {
+            border-radius: 0 8px 0 0;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-light);
+            transform: scale(1.01);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(39, 174, 96, 0.15);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(230, 126, 34, 0.15);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--danger);
+        }
+
+        .badge-info {
+            background: rgba(15, 76, 117, 0.15);
+            color: var(--primary);
+        }
+
+        .badge-pending {
+            background: rgba(127, 140, 141, 0.15);
+            color: var(--text-muted);
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-info {
+            background: rgba(15, 76, 117, 0.05);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .alert-warning {
+            background: rgba(230, 126, 34, 0.05);
+            border-color: var(--warning);
+            color: #9a5c0f;
+        }
+
+        .alert-success {
+            background: rgba(39, 174, 96, 0.05);
+            border-color: var(--success);
+            color: #1e7e34;
+        }
+
+        .data-entry-list {
+            margin-top: 1.5rem;
+        }
+
+        .entry-item {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .entry-item:hover {
+            background: #e9ecef;
+            transform: translateX(4px);
+        }
+
+        .entry-info {
+            flex: 1;
+        }
+
+        .entry-info strong {
+            color: var(--primary);
+        }
+
+        .entry-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .filter-section {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 2px dashed var(--border);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .delivery-item {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        .delivery-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .delivery-item.delivered {
+            border-color: var(--success);
+        }
+
+        .delivery-item.pending {
+            border-color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        .delivery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .delivery-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 1.05rem;
+        }
+
+        .delivery-details {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success) 0%, #27ae60 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            header {
+                margin: -1rem -1rem 1rem -1rem;
+                padding: 1.5rem 1rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            .entry-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .btn-delete {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // 🔥 CONFIGURACIÓN DE FIREBASE
+        // ✅ Credenciales configuradas para: Dashboard MEP Rendimiento
+        const firebaseConfig = {
+            apiKey: "AIzaSyAy-V4T0leg8i7Up0tZ09QjSxD5n-Z05xU",
+            authDomain: "dashboard-mep-rendimiento.firebaseapp.com",
+            projectId: "dashboard-mep-rendimiento",
+            storageBucket: "dashboard-mep-rendimiento.firebasestorage.app",
+            messagingSenderId: "206298323527",
+            appId: "1:206298323527:web:a6b07b3ab76eb425edef62"
+        };
+        
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Hacer disponibles globalmente
+        window.db = db;
+        window.firestoreModules = { collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, query, orderBy };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Dashboard de Rendimiento Académico</h1>
+            <p class="subtitle">Sistema Colaborativo con Firebase - Datos en Tiempo Real ☁️</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('entrada')">📝 Entrada de Datos</button>
+            <button class="tab" onclick="switchTab('control')">📋 Control de Entregas</button>
+            <button class="tab" onclick="switchTab('general')">📈 Vista General</button>
+            <button class="tab" onclick="switchTab('nivel-completo')">🎓 Por Nivel Completo</button>
+            <button class="tab" onclick="switchTab('secciones')">🏫 Por Sección</button>
+            <button class="tab" onclick="switchTab('profesores')">👨‍🏫 Por Profesor</button>
+            <button class="tab" onclick="switchTab('comparacion')">🔄 Comparación Periodos</button>
+            <button class="tab" onclick="switchTab('materias')">📚 Por Materia</button>
+        </div>
+
+        <!-- TAB: Entrada de Datos -->
+        <div id="entrada" class="tab-content active">
+            <div class="card">
+                <h2 class="card-title">🎯 Ingresar Notas Aprobadas por Sección</h2>
+                
+                <div class="alert alert-info">
+                    <span style="font-size: 1.5rem;">ℹ️</span>
+                    <div>
+                        <strong>Instrucciones:</strong> Ingrese únicamente las notas aprobadas (≥65 para Tercer Ciclo, ≥70 para Cuarto Ciclo). 
+                        El sistema registrará automáticamente su nombre, fecha y hora de entrega.
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="profesor">Nombre del Profesor <span class="required">*</span></label>
+                        <input type="text" id="profesor" placeholder="Ej: María Rodríguez" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="periodo">Periodo <span class="required">*</span></label>
+                        <select id="periodo">
+                            <option value="1">Primer Periodo</option>
+                            <option value="2">Segundo Periodo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nivel">Nivel <span class="required">*</span></label>
+                        <select id="nivel" onchange="updateMateriaOptions()">
+                            <option value="7">Sétimo</option>
+                            <option value="8">Octavo</option>
+                            <option value="9">Noveno</option>
+                            <option value="10">Décimo</option>
+                            <option value="11">Undécimo</option>
+                            <option value="12">Duodécimo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="seccion">Sección <span class="required">*</span></label>
+                        <input type="text" id="seccion" placeholder="Ej: 7-1, 10-2, 11-3">
+                    </div>
+
+                    <div class="form-group" id="especialidadGroup" style="display: none;">
+                        <label for="especialidad">Especialidad (Opcional)</label>
+                        <input type="text" id="especialidad" placeholder="Ej: Informática, Contabilidad">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="materia">Materia <span class="required">*</span></label>
+                        <select id="materia">
+                            <!-- Las opciones se generan dinámicamente según el nivel -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="totalEstudiantes">Total de Estudiantes <span class="required">*</span></label>
+                        <input type="number" id="totalEstudiantes" min="1" value="30">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notasAprobadas">Cantidad de Notas Aprobadas <span class="required">*</span></label>
+                        <input type="number" id="notasAprobadas" min="0" value="0">
+                    </div>
+
+                </div>
+
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="agregarDato()">
+                        ✅ Registrar Datos
+                    </button>
+                    <button class="btn btn-secondary" onclick="limpiarFormulario()">
+                        🔄 Limpiar Formulario
+                    </button>
+                </div>
+
+                <div class="data-entry-list" id="listaEntradas"></div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">📊 Carga Rápida desde Excel/CSV</h2>
+                
+                <div class="alert alert-info">
+                    <span style="font-size: 1.5rem;">💡</span>
+                    <div>
+                        <strong>Opciones rápidas:</strong> Puedes copiar y pegar desde Excel, subir un archivo CSV, o descargar una plantilla para llenar.
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <button class="btn btn-success" onclick="descargarPlantillaExcelProfesional()">
+                        📥 Descargar Plantilla Excel
+                    </button>
+                    <button class="btn btn-success" onclick="document.getElementById('csvFile').click()">
+                        📤 Subir Archivo CSV/Excel
+                    </button>
+                    <button class="btn btn-success" onclick="mostrarPegarDesdeExcel()">
+                        📋 Pegar desde Excel
+                    </button>
+                </div>
+
+                <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" style="display: none;" onchange="procesarArchivoExcel(event)">
+
+                <!-- Área para pegar desde Excel -->
+                <div id="areaPegarExcel" style="display: none;">
+                    <h3 style="margin-bottom: 1rem; color: var(--primary);">Pegar datos desde Excel</h3>
+                    <p style="margin-bottom: 1rem; color: var(--text-muted);">
+                        Copia las filas desde Excel (sin encabezados) y pégalas aquí. 
+                        <strong>Formato:</strong> Profesor | Periodo | Nivel | Sección | Especialidad | Materia | Total Est. | Aprobados | Promedio
+                    </p>
+                    <textarea id="excelPasteArea" rows="10" style="width: 100%; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-family: monospace; font-size: 0.9rem;" placeholder="Pega aquí los datos copiados desde Excel..."></textarea>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="procesarDatosPegados()">
+                            ✅ Procesar Datos Pegados
+                        </button>
+                        <button class="btn btn-secondary" onclick="cerrarPegarExcel()">
+                            ❌ Cancelar
+                        </button>
+                    </div>
+                    <div id="previewPegado" style="margin-top: 1.5rem;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">💾 Gestión de Datos</h2>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" onclick="exportarDatos()">
+                        📥 Exportar JSON
+                    </button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
+                        📤 Importar JSON
+                    </button>
+                    <button class="btn btn-secondary" onclick="cargarDatosEjemplo()">
+                        📋 Cargar Datos de Ejemplo
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importarDatos(event)">
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Control de Entregas -->
+        <div id="control" class="tab-content">
+            <div class="stats-grid" id="statsControl"></div>
+
+            <div class="card">
+                <h2 class="card-title">📊 Progreso de Entregas</h2>
+                <div id="progressContainer"></div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">📋 Estado de Entregas por Sección</h2>
+                <div class="filter-section">
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                        <div class="form-group" style="flex: 1; min-width: 200px;">
+                            <label for="filtroControlPeriodo">Periodo:</label>
+                            <select id="filtroControlPeriodo" onchange="actualizarVistaControl()">
+                                <option value="todos">Todos los Periodos</option>
+                                <option value="1">Primer Periodo</option>
+                                <option value="2">Segundo Periodo</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 200px;">
+                            <label for="filtroControlNivel">Nivel:</label>
+                            <select id="filtroControlNivel" onchange="actualizarVistaControl()">
+                                <option value="todos">Todos los Niveles</option>
+                                <option value="7">Sétimo</option>
+                                <option value="8">Octavo</option>
+                                <option value="9">Noveno</option>
+                                <option value="10">Décimo</option>
+                                <option value="11">Undécimo</option>
+                                <option value="12">Duodécimo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="listaControl"></div>
+            </div>
+        </div>
+
+        <!-- TAB: Vista General -->
+        <div id="general" class="tab-content">
+            <div class="stats-grid" id="statsGeneral"></div>
+            
+            <div class="card">
+                <h2 class="card-title">📊 Resumen por Materia y Nivel</h2>
+                <div id="tablaGeneral"></div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">📈 Rendimiento Global por Materia</h2>
+                <div class="chart-container">
+                    <canvas id="chartGeneral"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Por Nivel Completo (NUEVO) -->
+        <div id="nivel-completo" class="tab-content">
+            <div class="filter-section">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label for="filtroNivelCompleto">Nivel:</label>
+                        <select id="filtroNivelCompleto" onchange="actualizarVistaNivelCompleto()">
+                            <option value="7">Sétimo</option>
+                            <option value="8">Octavo</option>
+                            <option value="9">Noveno</option>
+                            <option value="10">Décimo</option>
+                            <option value="11">Undécimo</option>
+                            <option value="12">Duodécimo</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label for="filtroPeriodoNivelCompleto">Periodo:</label>
+                        <select id="filtroPeriodoNivelCompleto" onchange="actualizarVistaNivelCompleto()">
+                            <option value="todos">Ambos Periodos</option>
+                            <option value="1">Primer Periodo</option>
+                            <option value="2">Segundo Periodo</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label for="filtroMateriaNivelCompleto">Materia:</label>
+                        <select id="filtroMateriaNivelCompleto" onchange="actualizarVistaNivelCompleto()">
+                            <option value="todas">Todas las Materias</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="statsNivelCompleto"></div>
+
+            <div class="card">
+                <h2 class="card-title">📊 Comparación entre Secciones del Nivel</h2>
+                <div class="chart-container">
+                    <canvas id="chartNivelCompleto"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">📋 Detalle por Sección y Profesor</h2>
+                <div id="tablaNivelCompleto"></div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">🏆 Ranking de Secciones</h2>
+                <div id="rankingNivelCompleto"></div>
+            </div>
+        </div>
+
+        <!-- TAB: Por Sección -->
+        <div id="secciones" class="tab-content">
+            <div class="filter-section">
+                <label for="filtroSeccion" style="font-size: 1rem; margin-bottom: 0.5rem; display: block;">Filtrar por Sección:</label>
+                <input type="text" id="filtroSeccion" placeholder="Ej: 7-1, 10-2" onkeyup="actualizarVistaSecciones()" style="max-width: 300px;">
+            </div>
+
+            <div id="statsSecciones"></div>
+
+            <div class="card">
+                <h2 class="card-title">📊 Comparación entre Secciones</h2>
+                <div class="chart-container">
+                    <canvas id="chartSecciones"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">📋 Detalle por Sección</h2>
+                <div id="tablaSecciones"></div>
+            </div>
+        </div>
+
+        <!-- TAB: Por Profesor -->
+        <div id="profesores" class="tab-content">
+            <div class="filter-section">
+                <label for="filtroProfesor" style="font-size: 1rem; margin-bottom: 0.5rem; display: block;">Seleccionar Profesor:</label>
+                <select id="filtroProfesor" onchange="actualizarVistaProfesores()" style="width: 100%; max-width: 400px;">
+                    <option value="todos">Todos los Profesores</option>
+                </select>
+            </div>
+
+            <div id="statsProfesores"></div>
+
+            <div class="card">
+                <h2 class="card-title">📊 Rendimiento por Profesor</h2>
+                <div class="chart-container">
+                    <canvas id="chartProfesores"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">📋 Secciones por Profesor</h2>
+                <div id="tablaProfesores"></div>
+            </div>
+        </div>
+
+        <!-- TAB: Comparación Periodos -->
+        <div id="comparacion" class="tab-content">
+            <div class="alert alert-info">
+                <span style="font-size: 1.5rem;">🔄</span>
+                <div>
+                    <strong>Comparación entre periodos:</strong> Identifique mejoras o retrocesos en el rendimiento académico.
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">📈 Evolución del Porcentaje de Aprobación</h2>
+                <div class="chart-container">
+                    <canvas id="chartComparacion"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">📊 Tabla Comparativa Detallada</h2>
+                <div id="tablaComparacion"></div>
+            </div>
+        </div>
+
+        <!-- TAB: Por Materia -->
+        <div id="materias" class="tab-content">
+            <div class="filter-section">
+                <label for="filtroMateria" style="font-size: 1rem;">Seleccionar Materia:</label>
+                <select id="filtroMateria" onchange="actualizarVistaMaterias()" style="margin-top: 0.5rem; width: 100%; max-width: 300px;">
+                    <option value="todas">Todas las Materias</option>
+                    <option value="Ciencias">Ciencias</option>
+                    <option value="Física">Física</option>
+                    <option value="Química">Química</option>
+                    <option value="Biología">Biología</option>
+                    <option value="Español">Español</option>
+                    <option value="Matemáticas">Matemáticas</option>
+                    <option value="Estudios Sociales">Estudios Sociales</option>
+                    <option value="Inglés">Inglés</option>
+                </select>
+            </div>
+
+            <div id="statsMaterias"></div>
+
+            <div class="card">
+                <h2 class="card-title">📊 Análisis por Sección</h2>
+                <div class="chart-container">
+                    <canvas id="chartMaterias"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">📋 Detalle por Periodo</h2>
+                <div id="tablaMaterias"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let 
+            const datosEjemplo = [
+                {id: Date.now() + 1, profesor: 'Juan Pérez', periodo: 1, nivel: 7, seccion: '7-1', especialidad: '', materia: 'Matemáticas', totalEstudiantes: 30, notasAprobadas: 22, promedioNotas: 76.5, porcentajeAprobacion: 73.3, fechaHora: '29/4/2026 9:30:00'},
+                {id: Date.now() + 2, profesor: 'María López', periodo: 1, nivel: 7, seccion: '7-2', especialidad: '', materia: 'Matemáticas', totalEstudiantes: 28, notasAprobadas: 20, promedioNotas: 75.0, porcentajeAprobacion: 71.4, fechaHora: '29/4/2026 9:45:00'},
+                {id: Date.now() + 3, profesor: 'Juan Pérez', periodo: 1, nivel: 7, seccion: '7-1', especialidad: '', materia: 'Español', totalEstudiantes: 30, notasAprobadas: 25, promedioNotas: 78.2, porcentajeAprobacion: 83.3, fechaHora: '29/4/2026 10:00:00'},
+                {id: Date.now() + 4, profesor: 'Carlos Ramírez', periodo: 1, nivel: 10, seccion: '10-1', especialidad: 'Informática', materia: 'Física', totalEstudiantes: 25, notasAprobadas: 18, promedioNotas: 75.5, porcentajeAprobacion: 72.0, fechaHora: '29/4/2026 10:15:00'},
+                {id: Date.now() + 5, profesor: 'Ana Gutiérrez', periodo: 1, nivel: 10, seccion: '10-2', especialidad: 'Contabilidad', materia: 'Matemáticas', totalEstudiantes: 27, notasAprobadas: 19, promedioNotas: 76.8, porcentajeAprobacion: 70.4, fechaHora: '29/4/2026 10:30:00'},
+                {id: Date.now() + 6, profesor: 'Juan Pérez', periodo: 2, nivel: 7, seccion: '7-1', especialidad: '', materia: 'Matemáticas', totalEstudiantes: 30, notasAprobadas: 24, promedioNotas: 78.0, porcentajeAprobacion: 80.0, fechaHora: '29/4/2026 11:00:00'},
+                {id: Date.now() + 7, profesor: 'María López', periodo: 2, nivel: 7, seccion: '7-2', especialidad: '', materia: 'Matemáticas', totalEstudiantes: 28, notasAprobadas: 23, promedioNotas: 77.5, porcentajeAprobacion: 82.1, fechaHora: '29/4/2026 11:15:00'},
+                {id: Date.now() + 8, profesor: 'Carlos Ramírez', periodo: 2, nivel: 10, seccion: '10-1', especialidad: 'Informática', materia: 'Física', totalEstudiantes: 25, notasAprobadas: 20, promedioNotas: 78.2, porcentajeAprobacion: 80.0, fechaHora: '29/4/2026 11:30:00'}
+            ];
+            
+            try {
+                const { collection, addDoc } = window.firestoreModules;
+                for (const dato of datosEjemplo) {
+                    await addDoc(collection(window.db, 'datos'), dato);
+                }
+                alert('✅ Datos de ejemplo cargados exitosamente en Firebase');
+                // Los datos se actualizarán automáticamente por el listener
+            } catch (error) {
+                console.error('Error cargando ejemplos:', error);
+                alert('❌ Error al cargar datos de ejemplo: ' + error.message);
+            }
+
+        }
+
+        // ========== FUNCIONES PARA CARGA DESDE EXCEL/CSV ==========
+
+        function descargarPlantillaExcel() {
+            let csvContent = '';
+            
+            // Instrucciones (como comentarios)
+            csvContent += '# PLANTILLA DE CARGA DE NOTAS - DASHBOARD DE RENDIMIENTO ACADÉMICO\n';
+            csvContent += '# INSTRUCCIONES:\n';
+            csvContent += '# 1. Llene los datos a partir de la fila 11 (después de los ejemplos)\n';
+            csvContent += '# 2. Especialidad: Dejar vacío para 3er ciclo, llenar para 4to ciclo\n';
+            csvContent += '# 3. Total_Estudiantes: Cantidad total de estudiantes activos en la sección\n';
+            csvContent += '# 4. Notas_Aprobadas: Estudiantes con nota ≥65 (3er ciclo) o ≥70 (4to ciclo)\n';
+            csvContent += '# 5. Puede abrir este archivo en Excel, llenarlo y guardarlo como CSV\n';
+            csvContent += '#\n';
+            
+            // Encabezados
+            csvContent += 'Profesor,Periodo,Nivel,Seccion,Especialidad,Materia,Total_Estudiantes,Notas_Aprobadas,Promedio_Notas\n';
+            
+            // Ejemplos
+            csvContent += '# EJEMPLOS (puede eliminar estas líneas al llenar sus datos):\n';
+            csvContent += 'Juan Pérez,1,7,7-1,,Matemáticas,30,22,76.5\n';
+            csvContent += 'María López,1,8,8-1,,Ciencias,28,20,75.0\n';
+            csvContent += 'Carlos Ramírez,2,10,10-1,Informática,Física,25,18,77.5\n';
+            csvContent += '#\n';
+            csvContent += '# LLENE SUS DATOS AQUÍ (40 filas disponibles):\n';
+            
+            // 40 filas vacías con valores por defecto
+            for (let i = 0; i < 40; i++) {
+                // Dejar campos clave vacíos, pero con periodo y nivel por defecto
+                csvContent += ',1,7,,,,,\n';
+            }
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Plantilla_Carga_Notas.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Plantilla CSV descargada!\n\n📝 Instrucciones:\n1. Abra el archivo en Excel\n2. Llene sus datos desde la fila 11\n3. Guarde como CSV\n4. Suba el archivo usando "Subir Archivo CSV/Excel"\n\nO puede copiar y pegar directo usando "Pegar desde Excel"');
+        }
+
+        function procesarArchivoExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const content = e.target.result;
+                    const lines = content.split('\n').filter(line => line.trim());
+                    
+                    // Detectar si tiene encabezados (primera línea contiene texto no numérico en columnas de números)
+                    const primeraLinea = lines[0];
+                    const tieneEncabezado = primeraLinea.toLowerCase().includes('profesor') || 
+                                          primeraLinea.toLowerCase().includes('periodo') ||
+                                          primeraLinea.toLowerCase().includes('nivel');
+                    
+                    const startIndex = tieneEncabezado ? 1 : 0;
+                    const datosNuevos = [];
+                    let errores = [];
+
+                    for (let i = startIndex; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue;
+
+                        // Separar por coma o tabulación
+                        const cols = line.split(/[,\t]/).map(c => c.trim().replace(/^"|"$/g, ''));
+                        
+                        if (cols.length < 8) {
+                            errores.push(`Línea ${i + 1}: Faltan columnas (se esperan 8: Profesor, Periodo, Nivel, Sección, Especialidad, Materia, Total Estudiantes, Notas Aprobadas)`);
+                            continue;
+                        }
+
+                        const profesor = cols[0];
+                        const periodo = parseInt(cols[1]);
+                        const nivel = parseInt(cols[2]);
+                        const seccion = cols[3];
+                        const especialidad = cols[4] || '';
+                        const materia = cols[5];
+                        const totalEstudiantes = parseInt(cols[6]);
+                        const notasAprobadas = parseInt(cols[7]);
+                        // Promedio ya no se usa - se calcula automáticamente
+
+                        // Validaciones
+                        if (!profesor || !materia || !seccion) {
+                            errores.push(`Línea ${i + 1}: Faltan datos obligatorios (Profesor, Materia o Sección)`);
+                            continue;
+                        }
+
+                        if (isNaN(periodo) || periodo < 1 || periodo > 2) {
+                            errores.push(`Línea ${i + 1}: Periodo inválido (debe ser 1 o 2)`);
+                            continue;
+                        }
+
+                        if (isNaN(nivel) || nivel < 7 || nivel > 12) {
+                            errores.push(`Línea ${i + 1}: Nivel inválido (debe ser 7-12)`);
+                            continue;
+                        }
+
+                        if (isNaN(totalEstudiantes) || totalEstudiantes < 1) {
+                            errores.push(`Línea ${i + 1}: Total de estudiantes inválido`);
+                            continue;
+                        }
+
+                        if (isNaN(notasAprobadas) || notasAprobadas < 0 || notasAprobadas > totalEstudiantes) {
+                            errores.push(`Línea ${i + 1}: Notas aprobadas inválido`);
+                            continue;
+                        }
+
+                        if (isNaN(promedioNotas) || promedioNotas < 0 || promedioNotas > 100) {
+                            errores.push(`Línea ${i + 1}: Promedio inválido (debe estar entre 0-100)`);
+                            continue;
+                        }
+
+                        const porcentajeAprobacion = (notasAprobadas / totalEstudiantes * 100).toFixed(1);
+
+                        datosNuevos.push({
+                            id: Date.now() + i,
+                            profesor,
+                            periodo,
+                            nivel,
+                            seccion,
+                            especialidad,
+                            materia,
+                            totalEstudiantes,
+                            notasAprobadas,
+                            porcentajeAprobacion: parseFloat(porcentajeAprobacion),
+                            fechaHora: new Date().toLocaleString('es-CR')
+                        });
+                    }
+
+                    if (errores.length > 0) {
+                        alert('⚠️ Se encontraron errores:\n\n' + errores.join('\n') + '\n\nLos registros válidos se cargarán.');
+                    }
+
+                    if (datosNuevos.length > 0) {
+                        if (confirm(`¿Desea agregar ${datosNuevos.length} registro(s) a los datos actuales?`)) {
+                            datos = [...datos, ...datosNuevos];
+                            actualizarListaEntradas();
+                            actualizarTodasLasVistas();
+                            alert(`✅ ${datosNuevos.length} registro(s) agregado(s) exitosamente!`);
+                        }
+                    } else {
+                        alert('❌ No se pudo procesar ningún registro válido del archivo.');
+                    }
+
+                } catch (error) {
+                    alert('❌ Error al procesar el archivo: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function mostrarPegarDesdeExcel() {
+            document.getElementById('areaPegarExcel').style.display = 'block';
+            document.getElementById('excelPasteArea').value = '';
+            document.getElementById('previewPegado').innerHTML = '';
+        }
+
+        function cerrarPegarExcel() {
+            document.getElementById('areaPegarExcel').style.display = 'none';
+            document.getElementById('excelPasteArea').value = '';
+            document.getElementById('previewPegado').innerHTML = '';
+        }
+
+        function procesarDatosPegados() {
+            const texto = document.getElementById('excelPasteArea').value.trim();
+            
+            if (!texto) {
+                alert('❌ Por favor, pega los datos desde Excel');
+                return;
+            }
+
+            const lines = texto.split('\n').filter(line => line.trim());
+            const datosNuevos = [];
+            let errores = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                // Separar por tabulación (copia de Excel)
+                const cols = line.split('\t').map(c => c.trim());
+                
+                if (cols.length < 8) {
+                    errores.push(`Línea ${i + 1}: Faltan columnas (se esperan 8: Profesor, Periodo, Nivel, Sección, Especialidad, Materia, Total Estudiantes, Notas Aprobadas)`);
+                    continue;
+                }
+
+                const profesor = cols[0];
+                const periodo = parseInt(cols[1]);
+                const nivel = parseInt(cols[2]);
+                const seccion = cols[3];
+                const especialidad = cols[4] || '';
+                const materia = cols[5];
+                const totalEstudiantes = parseInt(cols[6]);
+                const notasAprobadas = parseInt(cols[7]);
+                // Promedio ya no se usa - se calcula automáticamente
+
+                // Validaciones
+                if (!profesor || !materia || !seccion) {
+                    errores.push(`Línea ${i + 1}: Faltan datos obligatorios`);
+                    continue;
+                }
+
+                if (isNaN(periodo) || periodo < 1 || periodo > 2) {
+                    errores.push(`Línea ${i + 1}: Periodo inválido`);
+                    continue;
+                }
+
+                if (isNaN(nivel) || nivel < 7 || nivel > 12) {
+                    errores.push(`Línea ${i + 1}: Nivel inválido`);
+                    continue;
+                }
+
+                if (isNaN(totalEstudiantes) || totalEstudiantes < 1) {
+                    errores.push(`Línea ${i + 1}: Total estudiantes inválido`);
+                    continue;
+                }
+
+                if (isNaN(notasAprobadas) || notasAprobadas < 0 || notasAprobadas > totalEstudiantes) {
+                    errores.push(`Línea ${i + 1}: Notas aprobadas inválido`);
+                    continue;
+                }
+
+                // Validación de promedio eliminada - ya no se usa
+
+                const porcentajeAprobacion = (notasAprobadas / totalEstudiantes * 100).toFixed(1);
+
+                datosNuevos.push({
+                    id: Date.now() + i,
+                    profesor,
+                    periodo,
+                    nivel,
+                    seccion,
+                    especialidad,
+                    materia,
+                    totalEstudiantes,
+                    notasAprobadas,
+                    porcentajeAprobacion: parseFloat(porcentajeAprobacion),
+                    fechaHora: new Date().toLocaleString('es-CR')
+                });
+            }
+
+            // Mostrar preview
+            let previewHTML = '<h4 style="color: var(--primary); margin-bottom: 1rem;">Vista Previa de Datos</h4>';
+            
+            if (errores.length > 0) {
+                previewHTML += '<div class="alert alert-warning"><strong>⚠️ Errores encontrados:</strong><br>' + errores.join('<br>') + '</div>';
+            }
+
+            if (datosNuevos.length > 0) {
+                previewHTML += `<div class="alert alert-success"><strong>✅ ${datosNuevos.length} registro(s) válido(s)</strong></div>`;
+                previewHTML += '<table><thead><tr><th>Profesor</th><th>P</th><th>Nivel</th><th>Sección</th><th>Materia</th><th>Est.</th><th>Aprob.</th><th>%</th></tr></thead><tbody>';
+                
+                datosNuevos.forEach(d => {
+                    previewHTML += `<tr>
+                        <td>${d.profesor}</td>
+                        <td>${d.periodo}</td>
+                        <td>${d.nivel}</td>
+                        <td>${d.seccion}</td>
+                        <td>${d.materia}</td>
+                        <td>${d.totalEstudiantes}</td>
+                        <td>${d.notasAprobadas}</td>
+                        <td><strong>${d.porcentajeAprobacion}%</strong></td>
+                    </tr>`;
+                });
+                
+                previewHTML += '</tbody></table>';
+                previewHTML += `<button class="btn btn-success" style="margin-top: 1rem;" onclick="confirmarDatosPegados(${JSON.stringify(datosNuevos).replace(/"/g, '&quot;')})">✅ Confirmar y Agregar ${datosNuevos.length} Registro(s)</button>`;
+            } else {
+                previewHTML += '<div class="alert alert-warning"><strong>❌ No se encontraron registros válidos</strong></div>';
+            }
+
+            document.getElementById('previewPegado').innerHTML = previewHTML;
+        }
+
+        function confirmarDatosPegados(datosNuevos) {
+            // Decodificar los datos que vienen como string
+            if (typeof datosNuevos === 'string') {
+                datosNuevos = JSON.parse(datosNuevos.replace(/&quot;/g, '"'));
+            }
+            
+            datos = [...datos, ...datosNuevos];
+            
+            actualizarListaEntradas();
+            actualizarTodasLasVistas();
+            cerrarPegarExcel();
+            alert(`✅ ${datosNuevos.length} registro(s) agregado(s) exitosamente!`);
+        }
+
+        // Inicializar
+        updateMateriaOptions(); // Cargar opciones de materia según el nivel por defecto
+        actualizarListaEntradas();
+    </script>
+</body>
+</html>
